@@ -35,4 +35,89 @@ def translate_from_en(text, target_lang):
 
 # Hugging Face API üzerinden yanıt al
 def query_huggingface(payload, api_key):
-    headers
+    headers = {"Authorization": f"Bearer {api_key}"}
+    response = requests.post(API_URL, headers=headers, json=payload)
+    if response.status_code == 200:
+        return response.json()[0]["generated_text"]
+    else:
+        return f"❗ API Hatası: {response.status_code} - {response.text}"
+
+# Dosya içeriği okuma
+def process_file(file):
+    ext = file.name.split('.')[-1].lower()
+    text = ""
+    if ext in ["txt"]:
+        text = file.getvalue().decode("utf-8")
+    elif ext in ["pdf"]:
+        try:
+            doc = fitz.open(stream=file.read(), filetype="pdf")
+            for page in doc:
+                text += page.get_text()
+        except:
+            text = "[PDF dosyası okunamadı]"
+    elif ext in ["doc", "docx"]:
+        try:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=f".{ext}") as tmp:
+                tmp.write(file.read())
+                tmp.flush()
+                text = docx2txt.process(tmp.name)
+                os.unlink(tmp.name)
+        except:
+            text = "[DOCX dosyası okunamadı]"
+    else:
+        text = "[Desteklenmeyen dosya türü]"
+    return text
+
+# Uygulama başlığı
+st.set_page_config(page_title="Cat CPT", layout="wide")
+st.title("😺 Cat CPT - Kedi Yapay Zekası")
+
+# API key girişi
+st.sidebar.title("🔐 Hugging Face API Key Girişi")
+api_key = st.sidebar.text_input("Hugging Face API Anahtarınızı girin:", type="password")
+if not api_key:
+    st.sidebar.warning("Devam etmek için API anahtarınızı girin.")
+    st.stop()
+
+# Kullanıcı girişi
+user_input = st.text_area("Sorunuzu yazın:", height=100)
+
+# Dosya yükleme
+uploaded_file = st.file_uploader("📎 Dosya yükleyin (PDF, DOCX, TXT)", type=['pdf', 'docx', 'txt'])
+file_text = ""
+if uploaded_file:
+    file_text = process_file(uploaded_file)
+    if file_text and "Desteklenmeyen" not in file_text:
+        st.info(f"Dosya içeriği başarıyla okundu. Uzunluk: {len(file_text)} karakter.")
+    else:
+        st.warning(file_text)
+
+if st.button("Gönder"):
+    if not user_input and not file_text:
+        st.warning("Lütfen bir soru yazın veya dosya yükleyin.")
+    else:
+        user_input_en = translate_to_en(user_input) if user_input else ""
+        file_text_en = translate_to_en(file_text) if file_text else ""
+
+        prompt = "Verdiğin bilgilerin sonunda mümkünse hangi kaynağa dayandığını da belirt. Güvenilir, gerçek bilgilere dayandır."
+        if user_input_en:
+            prompt += f"\n\nKullanıcının sorusu: {user_input_en}\n"
+        if file_text_en:
+            prompt += f"Yüklü dosya içeriği: {file_text_en}"
+
+        response_en = query_huggingface({"inputs": prompt}, api_key)
+        final_lang = detect(user_input) if user_input else "tr"
+        response = translate_from_en(response_en, final_lang)
+        st.markdown(f"**😺 Cat CPT Cevabı:**\n\n{response}")
+
+        # Sesli yanıt
+        if st.button("🔊 Sesli Oku"):
+            try:
+                tts = gTTS(text=response, lang=final_lang)
+                audio_path = "catcpt_response.mp3"
+                tts.save(audio_path)
+                audio_file = open(audio_path, "rb")
+                audio_bytes = audio_file.read()
+                st.audio(audio_bytes, format='audio/mp3')
+            except Exception as e:
+                st.error(f"Ses oluşturulamadı: {e}")
