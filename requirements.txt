@@ -4,6 +4,6 @@ Pillow
 langdetect
 deep-translator
 PyMuPDF
-python-docx
 docx2txt
 gTTS
+nltk
