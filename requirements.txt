@@ -3,6 +3,7 @@ requests
 Pillow
 langdetect
 deep-translator
+python-docx
 PyMuPDF
 docx2txt
 gTTS
