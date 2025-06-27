@@ -1,15 +1,27 @@
 # 😺 Cat CPT - Kedi Yapay Zekası
 
-Bu uygulama, Hugging Face destekli bir kedi temalı yapay zekâ sohbet sistemidir.  
-PDF, DOCX ve TXT dosyalarını analiz eder, çok dilli çalışır ve Türkçe sesli yanıt verebilir.
+Cat CPT, Hugging Face destekli çok dilli ve sesli yanıt verebilen bir kedi yapay zekasıdır.  
+Gelen soruları otomatik olarak analiz eder, içinden önemli **anahtar kelimeleri** çıkartır ve buna göre **gerçek kaynaklara dayalı** akıllı yanıtlar üretir.  
+İsteğe bağlı olarak sesli yanıt da verebilir.
 
 ---
 
-## 🚀 Kurulum
+## 🚀 Özellikler
 
-Aşağıdaki adımları takip ederek uygulamayı çalıştırabilirsiniz:
+- Hugging Face API ile yapay zeka yanıtı
+- Otomatik dil algılama ve çeviri
+- Anahtar kelimeye göre özetlenmiş analiz
+- Dosya yükleme: `.pdf`, `.docx`, `.txt`
+- Sesli cevap sistemi (gTTS ile)
+- Gündelik konuşmalara uygun yanıt
+- Mobil ve masaüstü uyumlu arayüz (Streamlit)
 
-### 1. Gerekli kütüphaneleri yükleyin
+---
+
+## ⚙️ Kurulum
+
+1. Python 3.8+ yüklü olmalı.
+2. Gerekli paketleri yükleyin:
 
 ```bash
 pip install -r requirements.txt
